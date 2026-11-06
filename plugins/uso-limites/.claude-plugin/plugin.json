@@ -1,0 +1,7 @@
+{
+  "name": "uso-limites",
+  "version": "0.1.0",
+  "description": "Franja sobre el prompt con los tokens consumidos en la sesión y barras del % usado del límite de 5 horas y del semanal",
+  "types": "./types/index.d.ts",
+  "license": "MIT"
+}

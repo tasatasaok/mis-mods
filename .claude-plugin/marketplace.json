@@ -1,0 +1,13 @@
+{
+  "name": "mis-mods",
+  "owner": { "name": "Maxi" },
+  "description": "Mis mods de Claude Code",
+  "plugins": [
+    {
+      "name": "uso-limites",
+      "source": "./plugins/uso-limites",
+      "description": "Tokens de la sesión y barras del % usado del límite de 5 horas y del semanal",
+      "version": "0.1.0"
+    }
+  ]
+}
