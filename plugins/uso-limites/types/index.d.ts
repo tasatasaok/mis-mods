@@ -7,6 +7,6 @@ export type Limites = { items: Limite[]; at: number; isFresh: boolean }
 
 declare module 'claude-code' {
   interface PluginState {
-    'uso-limites': { tokens: Tokens; limites: Limites | null }
+    'uso-limites': { tokens: Tokens; limites: Limites | null; activo: boolean }
   }
 }

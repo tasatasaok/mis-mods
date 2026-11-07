@@ -7,6 +7,10 @@ const CERO: Tokens = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }
 
 const tokens = atom({ plugin: 'uso-limites', key: 'tokens' } as const, CERO)
 const limites = atom({ plugin: 'uso-limites', key: 'limites' } as const, null)
+const activo = atom({ plugin: 'uso-limites', key: 'activo' } as const, true)
+
+/** Clave de $.store del interruptor On/Off, para que se recuerde entre sesiones. */
+const STORE_ACTIVO = 'activo'
 
 /** Clave de $.store donde queda el último dato de límites, para que una sesión nueva lo muestre enseguida. */
 const STORE_LIMITES = 'ultimosLimites'
@@ -60,6 +64,7 @@ async function guardarLimites($: EngineInterface, rl: readonly SessionRateLimit[
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     const r = await next(e)
+    if ((await $.store.get(STORE_ACTIVO)) === false) await update($, activo, () => false)
     const usage = await $.session.usage()
     if (usage.rateLimits.length > 0) {
       await guardarLimites($, usage.rateLimits)
@@ -98,8 +103,24 @@ export const register: Register = on => {
 
     const t = await read($, tokens)
     const l = await read($, limites)
+    const on_ = await read($, activo)
     const ahora = await $.clock.now()
-    const { Box, Text } = $.ui.resolve(e)
+    const { Box, Button, Text } = $.ui.resolve(e)
+
+    const alternar = async () => {
+      const nuevo = !(await read($, activo))
+      await update($, activo, () => nuevo)
+      await $.store.set(STORE_ACTIVO, nuevo)
+    }
+
+    if (!on_) {
+      return (
+        <Box>
+          <Text dimColor>Uso y límites: apagado </Text>
+          <Button key="toggle" label="On" onPress={alternar} />
+        </Box>
+      )
+    }
 
     const cols = e.props.bodyColumns
     const total = t.input + t.output + t.cacheRead + t.cacheWrite
@@ -110,6 +131,8 @@ export const register: Register = on => {
       <Box flexDirection="column">
         <Box>
           <Text bold>Tokens sesión: {formatoTokens(total)}</Text>
+          <Text> </Text>
+          <Button key="toggle" label="Off" onPress={alternar} />
           {angosto ? null : (
             <Text dimColor>
               {'  '}entrada {formatoTokens(t.input)} · salida {formatoTokens(t.output)} · caché {formatoTokens(t.cacheRead + t.cacheWrite)}
